@@ -1,0 +1,47 @@
+
+name: Build Zahid Hisab Book APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Extract project ZIP
+        run: |
+          unzip zahid-hisab-book-apk-ready.zip
+          cd zahid-hisab-book
+          npm install
+          npm install @capacitor/core@7 @capacitor/cli@7 @capacitor/android@7
+          npm run build
+          npx cap add android
+          npx cap sync android
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build APK
+        run: |
+          cd zahid-hisab-book/android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zahid-Hisab-Book-APK
+          path: zahid-hisab-book/android/app/build/outputs/apk/debug/app-debug.apk
+          
